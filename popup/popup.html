@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Human Type Paste</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">T</span>
+        <div>
+          <h1>Human Type Paste</h1>
+          <p class="tagline">Type into a field like a person</p>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <label class="label" for="text">Text to type</label>
+      <textarea
+        id="text"
+        rows="7"
+        placeholder="Paste or write the text you want typed into the page…"
+        spellcheck="false"
+      ></textarea>
+
+      <section class="settings" aria-label="Typing settings">
+        <h2>Speed (characters / minute)</h2>
+        <p class="hint">
+          Each minute a new rate is chosen at random inside this range.
+        </p>
+        <div class="row">
+          <div class="field">
+            <label for="cpmMin">Min</label>
+            <input id="cpmMin" type="number" min="1" max="2000" step="1" value="140" />
+          </div>
+          <div class="field">
+            <label for="cpmMax">Max</label>
+            <input id="cpmMax" type="number" min="1" max="2000" step="1" value="260" />
+          </div>
+        </div>
+
+        <div class="field typo-field">
+          <label for="typoPercent">Typo chance (%)</label>
+          <input id="typoPercent" type="number" min="0" max="100" step="0.5" value="4" />
+          <p class="hint">
+            Chance per character to mistype a nearby key, pause, then correct it.
+          </p>
+        </div>
+      </section>
+
+      <div class="target">
+        <span class="label">Target field</span>
+        <p id="targetLabel" class="target-label">None selected — click Pick field</p>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="pickBtn" class="btn secondary">Pick field</button>
+        <button type="button" id="startBtn" class="btn primary">Start typing</button>
+        <button type="button" id="stopBtn" class="btn danger" disabled>Stop</button>
+      </div>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
