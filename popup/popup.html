@@ -29,12 +29,12 @@
       <section class="settings" aria-label="Typing settings">
         <h2>Speed (characters / minute)</h2>
         <p class="hint">
-          Each minute a new rate is chosen at random inside this range.
+          Every 10 seconds a new rate is chosen at random inside this range.
         </p>
         <div class="row">
           <div class="field">
             <label for="cpmMin">Min</label>
-            <input id="cpmMin" type="number" min="1" max="2000" step="1" value="140" />
+            <input id="cpmMin" type="number" min="180" max="2000" step="1" value="180" />
           </div>
           <div class="field">
             <label for="cpmMax">Max</label>
@@ -58,9 +58,35 @@
 
       <div class="actions">
         <button type="button" id="pickBtn" class="btn secondary">Pick field</button>
-        <button type="button" id="startBtn" class="btn primary">Start typing</button>
-        <button type="button" id="stopBtn" class="btn danger" disabled>Stop</button>
+        <button type="button" id="startBtn" class="btn primary">
+          Start typing
+          <span class="btn-shortcut" id="startShortcutLabel">Alt+Shift+.</span>
+        </button>
+        <button type="button" id="stopBtn" class="btn danger" disabled>
+          Stop
+          <span class="btn-shortcut" id="stopShortcutLabel">Alt+Shift+,</span>
+        </button>
       </div>
+
+      <section class="shortcuts-card" aria-label="Keyboard shortcuts">
+        <h2>Keyboard shortcuts</h2>
+        <div class="shortcut-row">
+          <span>Start typing</span>
+          <span class="shortcut-keys" id="startShortcutKeys">
+            <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>.</kbd>
+          </span>
+        </div>
+        <div class="shortcut-row">
+          <span>Stop typing</span>
+          <span class="shortcut-keys" id="stopShortcutKeys">
+            <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>,</kbd>
+          </span>
+        </div>
+        <p class="hint">
+          Also shown on the webpage while picking a field or typing.
+          Change bindings at <span class="mono">chrome://extensions/shortcuts</span>
+        </p>
+      </section>
 
       <p id="status" class="status" role="status" aria-live="polite"></p>
     </main>

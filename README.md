@@ -1,6 +1,6 @@
 # Human Type Paste
 
-Chrome extension that types your text into a page field like a human — with a random characters-per-minute rate each minute and optional typos.
+Chrome extension that types your text into a page field like a human — with a random characters-per-minute rate every 10 seconds and optional typos.
 
 ## Install
 
@@ -14,11 +14,22 @@ Chrome extension that types your text into a page field like a human — with a 
 1. Open the site with the text field you want to fill
 2. Click the extension icon
 3. Paste/write your text
-4. Set **Min / Max characters per minute** (a new rate is rolled every minute inside that range)
+4. Set **Min / Max characters per minute** (a new rate is rolled every 10 seconds inside that range)
 5. Set **Typo chance (%)**
 6. Click **Pick field**, then click the target input/textarea on the page
-7. Open the extension again and click **Start typing**
-8. **Stop** or press **Esc** on the page to abort
+7. Open the extension again and click **Start typing** (or use the shortcut)
+8. **Stop**, press **Esc** on the page, or use the stop shortcut to abort
+
+## Shortcuts
+
+| Action | Default shortcut |
+|--------|------------------|
+| Start typing | `Alt`+`Shift`+`.` |
+| Stop typing | `Alt`+`Shift`+`,` |
+
+Change them anytime at `chrome://extensions/shortcuts`.
+
+Shortcut Start uses the text + settings last saved in the popup, and types into the previously picked (or currently focused) field.
 
 ## Notes
 

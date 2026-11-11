@@ -1,6 +1,6 @@
 const DEFAULTS = {
   text: "",
-  cpmMin: 140,
+  cpmMin: 180,
   cpmMax: 260,
   typoPercent: 4
 };
@@ -37,7 +37,7 @@ function readSettings() {
   let cpmMax = Number(els.cpmMax.value);
   let typoPercent = Number(els.typoPercent.value);
 
-  if (!Number.isFinite(cpmMin) || cpmMin < 1) cpmMin = DEFAULTS.cpmMin;
+  if (!Number.isFinite(cpmMin) || cpmMin < 180) cpmMin = Math.max(180, DEFAULTS.cpmMin);
   if (!Number.isFinite(cpmMax) || cpmMax < 1) cpmMax = DEFAULTS.cpmMax;
   if (cpmMax < cpmMin) [cpmMin, cpmMax] = [cpmMax, cpmMin];
   if (!Number.isFinite(typoPercent)) typoPercent = DEFAULTS.typoPercent;
@@ -61,8 +61,8 @@ async function saveState() {
 async function loadState() {
   const data = await chrome.storage.sync.get(DEFAULTS);
   els.text.value = data.text ?? "";
-  els.cpmMin.value = data.cpmMin ?? DEFAULTS.cpmMin;
-  els.cpmMax.value = data.cpmMax ?? DEFAULTS.cpmMax;
+  els.cpmMin.value = Math.max(180, Number(data.cpmMin) || DEFAULTS.cpmMin);
+  els.cpmMax.value = Math.max(Number(els.cpmMin.value), Number(data.cpmMax) || DEFAULTS.cpmMax);
   els.typoPercent.value = data.typoPercent ?? DEFAULTS.typoPercent;
 }
 
@@ -154,7 +154,7 @@ chrome.runtime.onMessage.addListener((message) => {
       setTypingUi(true);
       setStatus(`Typing… ${cpm} chars/min`);
     } else if (status === "cpm_refresh") {
-      setStatus(`New minute rate: ${cpm} chars/min · ${index}/${total}`);
+      setStatus(`New rate: ${cpm} chars/min · ${index}/${total}`);
     } else if (status === "progress") {
       setStatus(`Typing… ${index}/${total} · ${cpm} chars/min`);
     } else if (status === "done") {
@@ -217,8 +217,54 @@ els.stopBtn.addEventListener("click", async () => {
   els.typoPercent.addEventListener(evt, () => saveState());
 });
 
+function formatShortcutHtml(shortcut) {
+  if (!shortcut) return null;
+  return shortcut
+    .replace(/Command/g, "⌘")
+    .replace(/Ctrl/g, "Ctrl")
+    .replace(/Alt/g, "Alt")
+    .replace(/Shift/g, "Shift")
+    .replace(/Period/g, ".")
+    .replace(/Comma/g, ",")
+    .split("+")
+    .map((part) => `<kbd>${part}</kbd>`)
+    .join("+");
+}
+
+function formatShortcutText(shortcut) {
+  if (!shortcut) return null;
+  return shortcut
+    .replace(/Command/g, "⌘")
+    .replace(/Period/g, ".")
+    .replace(/Comma/g, ",");
+}
+
+async function loadShortcutHints() {
+  try {
+    const commands = await chrome.commands.getAll();
+    const start = commands.find((c) => c.name === "start-typing");
+    const stop = commands.find((c) => c.name === "stop-typing");
+    const startText = formatShortcutText(start?.shortcut) || "Alt+Shift+.";
+    const stopText = formatShortcutText(stop?.shortcut) || "Alt+Shift+,";
+    const startHtml = formatShortcutHtml(start?.shortcut) || "<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>.</kbd>";
+    const stopHtml = formatShortcutHtml(stop?.shortcut) || "<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>,</kbd>";
+
+    const startKeys = document.getElementById("startShortcutKeys");
+    const stopKeys = document.getElementById("stopShortcutKeys");
+    const startBtnLabel = document.getElementById("startShortcutLabel");
+    const stopBtnLabel = document.getElementById("stopShortcutLabel");
+    if (startKeys) startKeys.innerHTML = startHtml;
+    if (stopKeys) stopKeys.innerHTML = stopHtml;
+    if (startBtnLabel) startBtnLabel.textContent = startText;
+    if (stopBtnLabel) stopBtnLabel.textContent = stopText;
+  } catch (_) {
+    // keep static defaults from HTML
+  }
+}
+
 (async () => {
   await loadState();
+  await loadShortcutHints();
   try {
     const tab = await getActiveTab();
     const state = await ensureContentScript(tab.id);

@@ -21,6 +21,22 @@
   "background": {
     "service_worker": "scripts/background.js"
   },
+  "commands": {
+    "start-typing": {
+      "suggested_key": {
+        "default": "Alt+Shift+Period",
+        "mac": "Alt+Shift+Period"
+      },
+      "description": "Start human typing into the selected field"
+    },
+    "stop-typing": {
+      "suggested_key": {
+        "default": "Alt+Shift+Comma",
+        "mac": "Alt+Shift+Comma"
+      },
+      "description": "Stop human typing"
+    }
+  },
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],

@@ -175,9 +175,20 @@ input[type="number"]:focus {
   border: none;
   border-radius: 10px;
   padding: 10px 8px;
-  font: 600 12px/1 var(--font);
+  font: 600 12px/1.2 var(--font);
   cursor: pointer;
   transition: transform 0.08s ease, opacity 0.15s ease, background 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.btn-shortcut {
+  font: 600 9px/1 Consolas, "Courier New", monospace;
+  opacity: 0.85;
+  letter-spacing: 0.01em;
 }
 
 .btn:active:not(:disabled) {
@@ -202,6 +213,60 @@ input[type="number"]:focus {
 .btn.danger {
   background: var(--danger);
   color: var(--danger-ink);
+}
+
+.shortcuts-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+.shortcuts-card h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.shortcut-row:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.shortcut-keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.shortcut-keys kbd,
+.shortcuts-card kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: 0 1px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #eef4f1;
+  font: 600 10px/1.4 Consolas, "Courier New", monospace;
+  color: var(--ink);
+}
+
+.mono {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 10px;
 }
 
 .status {

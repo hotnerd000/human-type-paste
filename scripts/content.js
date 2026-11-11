@@ -48,6 +48,76 @@
   let abortTyping = false;
   let overlay = null;
   let highlightEl = null;
+  let shortcutPanel = null;
+  let shortcuts = { start: "Alt+Shift+.", stop: "Alt+Shift+," };
+
+  async function refreshShortcuts() {
+    try {
+      const res = await chrome.runtime.sendMessage({ type: "GET_SHORTCUTS" });
+      if (res?.ok && res.shortcuts) {
+        shortcuts = res.shortcuts;
+        renderShortcutPanel();
+      }
+    } catch (_) {
+      // keep defaults
+    }
+  }
+
+  function ensureShortcutPanel() {
+    if (shortcutPanel) return shortcutPanel;
+    shortcutPanel = document.createElement("div");
+    shortcutPanel.id = "htp-shortcut-panel";
+    Object.assign(shortcutPanel.style, {
+      position: "fixed",
+      right: "16px",
+      bottom: "16px",
+      zIndex: "2147483646",
+      minWidth: "220px",
+      maxWidth: "280px",
+      padding: "12px 14px",
+      borderRadius: "12px",
+      background: "rgba(18, 53, 46, 0.96)",
+      color: "#e8f5f1",
+      font: "12px/1.45 Segoe UI, system-ui, sans-serif",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.28)",
+      display: "none",
+      pointerEvents: "auto"
+    });
+    document.documentElement.appendChild(shortcutPanel);
+    renderShortcutPanel();
+    return shortcutPanel;
+  }
+
+  function renderShortcutPanel(extra = "") {
+    const panel = ensureShortcutPanel();
+    const start = shortcuts.start || "Alt+Shift+.";
+    const stop = shortcuts.stop || "Alt+Shift+,";
+    panel.innerHTML = `
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px;">Human Type Paste</div>
+      <div style="display:flex;justify-content:space-between;gap:12px;margin:4px 0;">
+        <span style="opacity:.85;">Start typing</span>
+        <span style="font-family:Consolas,monospace;font-weight:700;letter-spacing:.02em;">${start}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:12px;margin:4px 0;">
+        <span style="opacity:.85;">Stop typing</span>
+        <span style="font-family:Consolas,monospace;font-weight:700;letter-spacing:.02em;">${stop}</span>
+      </div>
+      <div style="margin-top:8px;opacity:.75;font-size:11px;">Esc also stops while typing</div>
+      ${extra ? `<div style="margin-top:8px;color:#9fe0cf;font-size:11px;">${extra}</div>` : ""}
+      <button type="button" id="htp-hide-shortcuts" style="
+        margin-top:10px;width:100%;border:0;border-radius:8px;padding:7px 8px;
+        background:#2a5f52;color:#e8f5f1;font:600 11px Segoe UI,system-ui,sans-serif;cursor:pointer;
+      ">Hide</button>
+    `;
+    panel.querySelector("#htp-hide-shortcuts")?.addEventListener("click", () => {
+      panel.style.display = "none";
+    });
+  }
+
+  function showShortcutPanel(extra = "") {
+    renderShortcutPanel(extra);
+    ensureShortcutPanel().style.display = "block";
+  }
 
   function isEditable(el) {
     if (!el || !(el instanceof Element)) return false;
@@ -140,7 +210,8 @@
       pointerEvents: "none",
       zIndex: "2147483647"
     });
-    banner.textContent = "Click a text field to select it  ·  Esc to cancel";
+    banner.id = "htp-pick-banner";
+    banner.innerHTML = "Click a text field to select it · Esc to cancel";
     overlay.appendChild(banner);
 
     overlay.addEventListener(
@@ -167,6 +238,7 @@
         if (editable) {
           selectedEl = editable;
           exitPickMode(true);
+          showShortcutPanel(`Field selected: ${describeField(editable)}`);
           chrome.runtime.sendMessage({
             type: "FIELD_SELECTED",
             label: describeField(editable)
@@ -187,6 +259,16 @@
 
   function enterPickMode() {
     pickMode = true;
+    refreshShortcuts().then(() => {
+      const banner = document.getElementById("htp-pick-banner");
+      if (banner) {
+        banner.innerHTML =
+          `Click a text field to select it · Esc to cancel<br>` +
+          `<span style="font-weight:500;opacity:.85;font-size:12px;">` +
+          `Later: Start <b>${shortcuts.start}</b> · Stop <b>${shortcuts.stop}</b></span>`;
+      }
+      showShortcutPanel("Pick a field, then use Start to type.");
+    });
     ensureOverlay().style.display = "block";
     ensureHighlight();
   }
@@ -365,16 +447,20 @@
     selectedEl = el;
     el.focus();
 
-    const cpmMin = Math.max(1, Number(settings.cpmMin) || 120);
+    const cpmMin = Math.max(180, Number(settings.cpmMin) || 180);
     const cpmMax = Math.max(cpmMin, Number(settings.cpmMax) || 280);
     const typoPercent = Math.min(100, Math.max(0, Number(settings.typoPercent) || 0));
 
+    const SPEED_REFRESH_MS = 10_000;
     let currentCpm = randomBetween(cpmMin, cpmMax);
-    let minuteStarted = Date.now();
-    let charsThisMinute = 0;
+    let speedWindowStarted = Date.now();
+    let charsThisWindow = 0;
 
     typing = true;
     abortTyping = false;
+
+    await refreshShortcuts();
+    showShortcutPanel(`Typing… ${Math.round(currentCpm)} chars/min`);
 
     chrome.runtime.sendMessage({
       type: "TYPING_STATUS",
@@ -388,10 +474,10 @@
       if (abortTyping) break;
 
       const now = Date.now();
-      if (now - minuteStarted >= 60_000) {
+      if (now - speedWindowStarted >= SPEED_REFRESH_MS) {
         currentCpm = randomBetween(cpmMin, cpmMax);
-        minuteStarted = now;
-        charsThisMinute = 0;
+        speedWindowStarted = now;
+        charsThisWindow = 0;
         chrome.runtime.sendMessage({
           type: "TYPING_STATUS",
           status: "cpm_refresh",
@@ -428,7 +514,7 @@
 
       dispatchKey(el, ch, ch === " " ? "Space" : `Key${ch.toUpperCase()}`);
       appendChar(el, ch);
-      charsThisMinute += 1;
+      charsThisWindow += 1;
 
       chrome.runtime.sendMessage({
         type: "TYPING_STATUS",
@@ -436,7 +522,7 @@
         cpm: Math.round(currentCpm),
         index: i + 1,
         total: text.length,
-        charsThisMinute
+        charsThisWindow
       }).catch(() => {});
 
       // Slightly longer pause after punctuation / newlines
@@ -451,6 +537,7 @@
     typing = false;
     const finished = !abortTyping;
     abortTyping = false;
+    showShortcutPanel(finished ? "Finished typing." : "Stopped.");
     chrome.runtime.sendMessage({
       type: "TYPING_STATUS",
       status: finished ? "done" : "stopped",
@@ -458,6 +545,7 @@
       total: text.length
     }).catch(() => {});
   }
+
 
   document.addEventListener(
     "keydown",
