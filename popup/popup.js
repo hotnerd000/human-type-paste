@@ -1,7 +1,7 @@
 const DEFAULTS = {
   text: "",
-  cpmMin: 180,
-  cpmMax: 260,
+  cpmMin: 260,
+  cpmMax: 320,
   typoPercent: 4
 };
 
@@ -37,7 +37,7 @@ function readSettings() {
   let cpmMax = Number(els.cpmMax.value);
   let typoPercent = Number(els.typoPercent.value);
 
-  if (!Number.isFinite(cpmMin) || cpmMin < 180) cpmMin = Math.max(180, DEFAULTS.cpmMin);
+  if (!Number.isFinite(cpmMin) || cpmMin < 260) cpmMin = Math.max(260, DEFAULTS.cpmMin);
   if (!Number.isFinite(cpmMax) || cpmMax < 1) cpmMax = DEFAULTS.cpmMax;
   if (cpmMax < cpmMin) [cpmMin, cpmMax] = [cpmMax, cpmMin];
   if (!Number.isFinite(typoPercent)) typoPercent = DEFAULTS.typoPercent;
@@ -61,7 +61,7 @@ async function saveState() {
 async function loadState() {
   const data = await chrome.storage.sync.get(DEFAULTS);
   els.text.value = data.text ?? "";
-  els.cpmMin.value = Math.max(180, Number(data.cpmMin) || DEFAULTS.cpmMin);
+  els.cpmMin.value = Math.max(260, Number(data.cpmMin) || DEFAULTS.cpmMin);
   els.cpmMax.value = Math.max(Number(els.cpmMin.value), Number(data.cpmMax) || DEFAULTS.cpmMax);
   els.typoPercent.value = data.typoPercent ?? DEFAULTS.typoPercent;
 }

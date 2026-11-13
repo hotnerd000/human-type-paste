@@ -447,8 +447,8 @@
     selectedEl = el;
     el.focus();
 
-    const cpmMin = Math.max(180, Number(settings.cpmMin) || 180);
-    const cpmMax = Math.max(cpmMin, Number(settings.cpmMax) || 280);
+    const cpmMin = Math.max(260, Number(settings.cpmMin) || 260);
+    const cpmMax = Math.max(cpmMin, Number(settings.cpmMax) || 320);
     const typoPercent = Math.min(100, Math.max(0, Number(settings.typoPercent) || 0));
 
     const SPEED_REFRESH_MS = 10_000;

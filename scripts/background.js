@@ -1,7 +1,7 @@
 const DEFAULTS = {
   text: "",
-  cpmMin: 180,
-  cpmMax: 260,
+  cpmMin: 260,
+  cpmMax: 320,
   typoPercent: 4
 };
 
@@ -93,7 +93,7 @@ function normalizeSettings(data) {
   let cpmMin = Number(data.cpmMin);
   let cpmMax = Number(data.cpmMax);
   let typoPercent = Number(data.typoPercent);
-  if (!Number.isFinite(cpmMin) || cpmMin < 180) cpmMin = Math.max(180, DEFAULTS.cpmMin);
+  if (!Number.isFinite(cpmMin) || cpmMin < 260) cpmMin = Math.max(260, DEFAULTS.cpmMin);
   if (!Number.isFinite(cpmMax) || cpmMax < 1) cpmMax = DEFAULTS.cpmMax;
   if (cpmMax < cpmMin) [cpmMin, cpmMax] = [cpmMax, cpmMin];
   if (!Number.isFinite(typoPercent)) typoPercent = DEFAULTS.typoPercent;
